@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Жалобы клиентов | Санлайт</title>
+    <style>
+        :root {
+            --bbc-red: #bb1919;
+            --bbc-dark: #0f0f0f;
+            --bbc-light: #f6f6f6;
+            --bbc-gray: #333;
+            --gold: #d4af37;
+            --diamond: #b9f2ff;
+            --jewelry: #ff6b6b;
+            --service: #4ecdc4;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: var(--bbc-dark);
+            color: var(--bbc-light);
+            height: 250px;
+            overflow: hidden;
+            position: relative;
+        }
+        #ticker-bar.dragging {
+        cursor: grabbing;
+    }
+        #ticker-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 48px;
+            background: var(--bbc-red);
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        #ticker-content {
+            white-space: nowrap;
+            overflow: hidden;
+            position: relative;
+            flex-grow: 1;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+        .ticker-item {
+            position: absolute;
+            top: 0;
+            left: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            animation: ticker-scroll 20s linear infinite;
+            padding: 0 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        @keyframes ticker-scroll {
+            0% {
+                left: 100%;
+            }
+            100% {
+                left: -100%;
+            }
+        }
+        #department-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-right: 20px;
+        }
+        .logo-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: white;
+            color: var(--bbc-red);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.3);
+        }
+        .logo-image {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        #change-department-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #change-department-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        #menu-button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 10px;
+        }
+        #menu-button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        #main-content {
+            position: absolute;
+            top: 48px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background: rgba(30, 30, 30, 0.9);
+        }
+        #auth-container {
+            width: 100%;
+            margin: 0 auto;
+            background: rgba(30,30,30,0.9);
+            border-radius: 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: fadeIn 0.6s ease-out;
+            padding: 20px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .auth-toggle {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .auth-toggle button {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .auth-toggle button.active {
+            background: var(--bbc-red);
+        }
+        .auth-toggle button:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .auth-input-container {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .auth-input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            justify-content: center;
+            width: 100%;
+        }
+        .auth-input-group label {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        .auth-input-group select,
+        .auth-input-group input {
+            flex: 1;
+            padding: 12px 15px;
+            background: rgba(50,50,50,0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .auth-input-group select:focus,
+        .auth-input-group input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.3);
+        }
+        .auth-btn {
+            margin-left: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .auth-btn img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+        .auth-btn:hover img {
+            transform: scale(1.1);
+        }
+        .error-message {
+            color: #ff6b6b;
+            font-size: 14px;
+            margin-top: 5px;
+            min-height: 20px;
+            text-align: center;
+            margin-top: -2px;
+        }
+        .autocomplete-list {
+            position: absolute;
+            background: rgba(40,40,40,0.95);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            width: calc(50% - 30px);
+            z-index: 100;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            margin-top: 5px;
+        }
+        .autocomplete-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            color: var(--bbc-light);
+            transition: all 0.2s;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .autocomplete-item:hover,
+        .autocomplete-item.active {
+            background: rgba(187, 25, 25, 0.2);
+        }
+        #complaint-display {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            overflow: hidden;
+            position: relative;
+        }
+        .complaint-container {
+            background: rgba(30, 30, 30, 0.9);
+            padding: 0;
+            box-shadow: none;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border: none;
+            animation: slideIn 0.5s ease-out;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+        .complaint-slide {
+            position: absolute;
+            width: 100%;
+            transition: transform 0.5s ease-in-out;
+        }
+        .complaint-slide-enter {
+            transform: translateX(100%);
+        }
+        .complaint-slide-enter-active {
+            transform: translateX(0);
+        }
+        .complaint-slide-exit {
+            transform: translateX(0);
+        }
+        .complaint-slide-exit-active {
+            transform: translateX(-100%);
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .complaint-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0;
+            padding: 0 10px;
+            height: 20px;
+            font-size: 12px;
+            background: rgba(30, 30, 30, 0.9);
+        }
+        .complaint-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .complaint-number {
+            background: var(--bbc-red);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+        }
+        .complaint-number:hover {
+            background: #a01515;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(187, 25, 25, 0.3);
+        }
+        .complaint-date {
+            color: rgba(255,255,255,0.7);
+            font-size: 12px;
+        }
+        .control-buttons {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        .ctrl-btn {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        .ctrl-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.1);
+        }
+        .email-btn {
+            width: 20px;
+            height: 20px;
+            background-image: url('https://gagaru.club/uploads/posts/2023-06/1686346025_gagaru-club-p-krasnii-konvert-instagram-49.jpg');
+            background-size: cover;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            margin-right: 5px;
+            padding: 0;
+        }
+        .email-btn:hover {
+            transform: scale(1.1);
+        }
+        .complaint-text {
+            height: 100px;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-y: auto;
+            padding: 10px;
+            font-family: 'Arial', sans-serif;
+            color: rgba(255,255,255,0.95);
+            background: rgba(30, 30, 30, 0.9);
+            position: relative;
+        }
+        .floating-timer {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 50px;
+            height: 50px;
+            z-index: 10;
+        }
+        .clock-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid var(--gold);
+            border-radius: 50%;
+            background: rgba(30, 30, 30, 0.8);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+        .clock-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 3px;
+            height: 3px;
+            background: var(--bbc-red);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+        .hour-hand {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 12px;
+            background: var(--bbc-light);
+            transform-origin: bottom center;
+            transform: translate(-50%, -100%) rotate(0deg);
+            transition: transform 0.5s cubic-bezier(0.4, 2.3, 0.3, 1);
+        }
+        .minute-hand {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 20px;
+            background: var(--bbc-red);
+            transform-origin: bottom center;
+            transform: translate(-50%, -100%) rotate(0deg);
+            transition: transform 0.5s cubic-bezier(0.4, 2.3, 0.3, 1);
+        }
+        .timer-digital {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--bbc-light);
+            text-shadow: 0 0 5px rgba(187, 25, 25, 0.7);
+            z-index: 5;
+            min-width: 30px;
+            text-align: center;
+        }
+        .timer-pulse {
+            animation: pulse 1s infinite alternate;
+        }
+        @keyframes pulse {
+            from { box-shadow: 0 0 0 0 rgba(187, 25, 25, 0.4); }
+            to { box-shadow: 0 0 0 6px rgba(187, 25, 25, 0); }
+        }
+        .timer-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, 25%);
+            font-size: 8px;
+            font-weight: bold;
+            color: var(--gold);
+            text-align: center;
+            width: 100%;
+            font-family: 'Arial', monospace;
+        }
+        .timer-alert {
+            color: #ff5555;
+            animation: alert-pulse 0.5s infinite alternate;
+        }
+        @keyframes alert-pulse {
+            from { opacity: 1; }
+            to { opacity: 0.5; }
+        }
+        @media (max-width: 768px) {
+            .auth-input-container {
+                flex-direction: column;
+            }
+            .auth-btn {
+                margin-top: 10px;
+            }
+            .complaint-header {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .complaint-title {
+                width: 100%;
+            }
+            .control-buttons {
+                width: 100%;
+                justify-content: center;
+            }
+            .complaint-text {
+                font-size: 14px;
+                padding: 2px 10px 20px;
+            }
+            .ticker-item {
+                font-size: 12px;
+                padding: 0 10px;
+            }
+            .floating-timer {
+                width: 40px;
+                height: 40px;
+            }
+        }
+        @media (max-width: 480px) {
+            .ctrl-btn {
+                width: 20px;
+                height: 20px;
+                font-size: 12px;
+            }
+            .complaint-container {
+                padding: 10px;
+            }
+            .floating-timer {
+                width: 35px;
+                height: 35px;
+            }
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #fff;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="ticker-bar">
+        <div id="department-logo" style="display:none;">
+            <div class="logo-circle">
+                <img id="department-logo-image" style="display:none;" class="logo-image" alt="Logo">
+                <span id="department-logo-text"></span>
+            </div>
+            <span id="current-department">Отдел Санлайт</span>
+        </div>
+        <div id="ticker-content">
+            <div class="ticker-item">Обновляем информацию для вас...</div>
+        </div>
+        <button id="menu-button" style="display: none;">Меню</button>
+    </div>
+    <div id="main-content">
+        <div id="auth-container">
+            <div class="auth-toggle">
+                <button id="toggle-department" class="active">Вход по отделу</button>
+                <button id="toggle-employee">Вход по сотруднику</button>
+            </div>
+            <div id="department-auth" class="auth-input-container">
+                <div class="auth-input-group">
+                    <select id="department-select">
+                        <option value="">Загрузка отделов...</option>
+                    </select>
+                    <button id="auth-btn" class="auth-btn">
+                        <img src="https://sun6-22.userapi.com/s/v1/ig2/OJT5cF95uE9UuHYQVPTy22M_zdPgn9sqW36__ItIkdH9Icc6GShQ7GL9UvJ9OIELdBgUh1sSQ-sjCm05MaEv03Qn.jpg?size=1266x1266&quality=95&crop=8,0,1266,1266&ava=1" alt="Войти">
+                    </button>
+                </div>
+                <div id="auth-error" class="error-message"></div>
+            </div>
+            <div id="employee-auth" class="auth-input-container" style="display: none;">
+                <div class="auth-input-group">
+                    <input type="text" id="employee-input" placeholder="Начните вводить имя..." autocomplete="off" />
+                    <div id="autocomplete-list" class="autocomplete-list" style="display:none;"></div>
+                    <button id="employee-btn" class="auth-btn">
+                        <img src="https://sun6-22.userapi.com/s/v1/ig2/OJT5cF95uE9UuHYQVPTy22M_zdPgn9sqW36__ItIkdH9Icc6GShQ7GL9UvJ9OIELdBgUh1sSQ-sjCm05MaEv03Qn.jpg?size=1266x1266&quality=95&crop=8,0,1266,1266&ava=1" alt="Войти">
+                    </button>
+                </div>
+                <div id="employee-error" class="error-message"></div>
+            </div>
+        </div>
+        <div id="complaint-display" style="display:none;">
+            <div class="complaint-container" id="complaint-content">
+            </div>
+        </div>
+    </div>
+    <div class="overlay" id="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+    <script>
+        const isElectron = typeof process !== 'undefined' && process.versions && process.versions.electron;
+        let shell = null;
+        let nodeFetch = null;
+        if (isElectron) {
+            try {
+                shell = require('electron').shell;
+                nodeFetch = require('node-fetch');
+            } catch (e) {
+                console.error('Ошибка загрузки модулей Electron:', e);
+            }
+        }
+        const SHEET_ID = '1PAMSR9WQ4sPwX0hT5gAUSy0I0xhHts4ElHHb48gtmpw';
+        const DEPARTMENT_SHEET = 'Отдел - получатель';
+        const DETAIL2_SHEET = '2 линия детализация';
+        const EDNA_SHEET = 'эдна-детализация';
+        let employees = [];
+        let departmentByEmployee = {};
+        let complaints = [];
+        let complaintInterval;
+        let currentComplaintIndex = 0;
+        let timeRemaining = 40000;
+        let isPaused = false;
+        let pauseInterval;
+        let currentDepartment = '';
+        let currentTickerText = '';
+        let appState = 'auth';
+        let tickerInterval;
+        let currentComplaintElement = null;
+        let departmentLogos = {};
+        async function fetchSheetData(sheetName, range) {
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&range=${range}`;
+            try {
+                const resp = isElectron && nodeFetch ? await nodeFetch(url) : await fetch(url);
+                const text = await resp.text();
+                const jsonText = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\);/)[1];
+                const data = JSON.parse(jsonText);
+                return data.table;
+            } catch (e) {
+                console.error(`Ошибка загрузки данных из листа ${sheetName}:`, e);
+                return null;
+            }
+        }
+        async function updateTickerText() {
+            try {
+                const table = await fetchSheetData(DEPARTMENT_SHEET, 'D:F');
+                if (!table || !table.rows) {
+                    throw new Error('Нет данных');
+                }
+                let tickerText = 'Текущие обращения и жалобы клиентов Санлайт';
+                if (appState === 'department' && currentDepartment) {
+                    for (const row of table.rows) {
+                        const departmentCell = row.c[0]?.v?.toString().trim();
+                        if (departmentCell === currentDepartment) {
+                            tickerText = row.c[1]?.v?.toString().trim() || 'Текст не найден';
+                            break;
+                        }
+                    }
+                } else {
+                    tickerText = table.rows[1]?.c[1]?.v?.toString().trim() || 'Текст не найден';
+                }
+                departmentLogos = {};
+                for (const row of table.rows) {
+                    const departmentCell = row.c[0]?.v?.toString().trim();
+                    const logoUrl = row.c[2]?.v?.toString().trim();
+                    if (departmentCell && logoUrl) {
+                        departmentLogos[departmentCell] = logoUrl;
+                    }
+                }
+                if (appState === 'department' && currentDepartment) {
+                    updateDepartmentLogo(currentDepartment);
+                }
+                if (tickerText !== currentTickerText) {
+                    currentTickerText = tickerText;
+                    const tickerContent = document.getElementById('ticker-content');
+                    const newTicker = document.createElement('div');
+                    newTicker.className = 'ticker-item';
+                    newTicker.textContent = tickerText;
+                    newTicker.style.opacity = '0';
+                    newTicker.style.transition = 'opacity 0.5s ease-in-out';
+                    tickerContent.appendChild(newTicker);
+                    setTimeout(() => {
+                        newTicker.style.opacity = '1';
+                        const oldTicker = tickerContent.querySelector('.ticker-item:first-child');
+                        if (oldTicker) {
+                            oldTicker.style.opacity = '0';
+                            setTimeout(() => {
+                                if (oldTicker.parentNode === tickerContent) {
+                                    tickerContent.removeChild(oldTicker);
+                                }
+                            }, 500);
+                        }
+                    }, 50);
+                }
+            } catch (error) {
+                console.error('Ошибка при обновлении бегущей строки:', error);
+            }
+        }
+        function parseCSV(str) {
+            const rows = [];
+            let row = [];
+            let current = '';
+            let inQuotes = false;
+            let quoteChar = '"';
+            for (let i = 0; i < str.length; i++) {
+                const char = str[i];
+                if (char === quoteChar) {
+                    if (inQuotes && str[i + 1] === quoteChar) {
+                        current += quoteChar;
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    row.push(current.trim());
+                    current = '';
+                } else if ((char === '\r' || char === '\n') && !inQuotes) {
+                    if (char === '\r' && str[i + 1] === '\n') i++;
+                    row.push(current.trim());
+                    if (row.some(field => field !== '')) {
+                        rows.push(row);
+                    }
+                    row = [];
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            if (current !== '' || row.length > 0) {
+                row.push(current.trim());
+                rows.push(row);
+            }
+            return rows.filter(r => r.length > 0 && r.some(c => c !== ''));
+        }
+        function normalizeStr(str) {
+            return (str || "")
+                .replace(/[“”«»'"`]/g, '')
+                .replace(/[\u2013-\u2015]/g, '-')
+                .replace(/[\s_]+/g, ' ')
+                .trim()
+                .toLowerCase();
+        }
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        function parseDateTime(dateStr, timeStr = "") {
+            if (!dateStr) return 0;
+            let day, month, year;
+            const dateParts = dateStr.split(/[\.\-\/]/);
+            if (dateParts.length === 3) {
+                day = parseInt(dateParts[0], 10);
+                month = parseInt(dateParts[1], 10) - 1;
+                year = parseInt(dateParts[2], 10);
+                if (year < 100) year += 2000;
+            }
+            else if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                const [y, m, d] = dateStr.split('-');
+                day = parseInt(d, 10);
+                month = parseInt(m, 10) - 1;
+                year = parseInt(y, 10);
+            }
+            else {
+                return 0;
+            }
+            let hours = 0, minutes = 0;
+            if (timeStr) {
+                const timeParts = timeStr.split(':');
+                if (timeParts.length >= 2) {
+                    hours = parseInt(timeParts[0], 10);
+                    minutes = parseInt(timeParts[1], 10);
+                }
+            }
+            const dateObj = new Date(year, month, day, hours, minutes);
+            return isNaN(dateObj) ? 0 : dateObj.getTime();
+        }
+        function filterOutHotButtons(text) {
+            const hotButtons = [
+                'start', '🛒 мои покупки', '🚛 статус заказа', '💍 возврат товара',
+                '💳 возврат денег', '⬅️ в главное меню', '💍 узнать об украшении',
+                'характеристики', 'наличие', '⬅️⬅️ в главное меню', '🥇 акции и скидки',
+                '📲 лучшее предложение по цене', '🙅‍♀️ скидка не применяется', '🤷‍♀️ вопросы по стоимости',
+                '🎊 скидка на день Рождения', '💰 бонусы', '⚖️ ломбард', '📝 другой вопрос',
+                '⬅️ назад', '💰 цена за грамм', '📍 адреса ломбардов', '📝 условия оформления',
+                '📲 мой залог', '🔎 что принимаем, оценка'
+            ];
+            let filteredText = text;
+            hotButtons.forEach(button => {
+                filteredText = filteredText.split(button).join('').trim();
+            });
+            return filteredText;
+        }
+        async function loadDepartments() {
+            try {
+                const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(DEPARTMENT_SHEET)}&range=A:A`;
+                const resp = isElectron && nodeFetch ? await nodeFetch(url) : await fetch(url);
+                const text = await resp.text();
+                const rows = parseCSV(text);
+                const departments = [];
+                for (let i = 1; i < rows.length; i++) {
+                    const dep = rows[i][0]?.trim();
+                    if (dep) departments.push(dep);
+                }
+                const select = document.getElementById('department-select');
+                select.innerHTML = '<option value="">-- Выберите отдел --</option>';
+                Array.from(new Set(departments)).forEach(dep => {
+                    const option = document.createElement('option');
+                    option.value = dep;
+                    option.textContent = dep;
+                    select.appendChild(option);
+                });
+            } catch (e) {
+                console.error('Ошибка загрузки отделов:', e);
+            }
+        }
+        async function loadEmployeesAndMap() {
+            try {
+                const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(DEPARTMENT_SHEET)}&range=A:B`;
+                const resp = isElectron && nodeFetch ? await nodeFetch(url) : await fetch(url);
+                const text = await resp.text();
+                const rows = parseCSV(text);
+                employees = [];
+                departmentByEmployee = {};
+                for (let i = 1; i < rows.length; i++) {
+                    const dep = rows[i][0]?.trim() || "";
+                    const emp = rows[i][1]?.trim() || "";
+                    if (emp) {
+                        employees.push(emp);
+                        departmentByEmployee[emp] = dep;
+                    }
+                }
+                employees = [...new Set(employees)].sort();
+            } catch (e) {
+                console.error('Ошибка загрузки сотрудников:', e);
+                document.getElementById('employee-error').textContent = 'Ошибка загрузки списка сотрудников!';
+            }
+        }
+        function findColumn(headers, possibleNames) {
+            const normalizedHeaders = headers.map(normalizeStr);
+            for (const name of possibleNames.map(normalizeStr)) {
+                const index = normalizedHeaders.indexOf(name);
+                if (index > -1) return index;
+            }
+            console.error('Доступные колонки:', headers.map((h, i) => `${i}: "${h}" (норм: "${normalizeStr(h)}")`));
+            return -1;
+        }
+        async function getComplaintsForDepartment(dep) {
+            try {
+                const targetDep = normalizeStr(dep);
+                const seen = new Set();
+                const allComplaints = [];
+                const detailUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(DETAIL2_SHEET)}&range=A:AT`;
+                const detailResp = isElectron && nodeFetch ? await nodeFetch(detailUrl) : await fetch(detailUrl);
+                const detailText = await detailResp.text();
+                const detailRows = parseCSV(detailText);
+                if (detailRows.length > 0) {
+                    const detailHeaders = detailRows[0];
+                    const departmentIndex = findColumn(detailHeaders, ['Отдел', 'AT']);
+                    const textIndex = findColumn(detailHeaders, ['Текст', 'U']);
+                    const dateIndex = findColumn(detailHeaders, ['Дата обращения', 'D']);
+                    const timeIndex = findColumn(detailHeaders, ['Время обращения', 'E']);
+                    const complaintNumberIndex = findColumn(detailHeaders, ['Номер', 'A']);
+                    const complaintCategoryIndex = findColumn(detailHeaders, ['Категория обращения', 'R']);
+                    if (departmentIndex !== -1 && textIndex !== -1 && dateIndex !== -1) {
+                        for (let i = 1; i < detailRows.length; i++) {
+                            const row = detailRows[i];
+                            const rowDepartment = normalizeStr(row[departmentIndex] || "");
+                            const text = (row[textIndex] || '').trim();
+                            const complaintNumber = (row[complaintNumberIndex] || '').trim();
+                            const complaintCategory = (row[complaintCategoryIndex] || '').trim();
+                            const rawDate = (row[dateIndex] || '').trim();
+                            const rawTime = (row[timeIndex] || '').trim();
+                            const formattedTime = rawTime.split(':').slice(0, 2).join(':');
+                            const datetime = rawDate && formattedTime ? `${rawDate}, ${formattedTime}` : '';
+                            const timestamp = parseDateTime(rawDate, rawTime);
+                            if ((targetDep === 'клиентский сервис' || rowDepartment === targetDep) && text && !seen.has(text)) {
+                                seen.add(text);
+                                const complaintHtml = `
+                                    <div class="complaint-header">
+                                        <div class="complaint-title">
+                                            <span class="complaint-number" data-type="detail2" data-id="${complaintNumber}">
+                                                ${complaintCategory} №${complaintNumber}
+                                            </span>
+                                            <div id="complaint-date">${datetime}</div>
+                                        </div>
+                                        <div class="control-buttons">
+                                            <button class="email-btn" title="Отправить почту"></button>
+                                            <button class="ctrl-btn prev-btn" title="Предыдущая">◀</button>
+                                            <button class="ctrl-btn pause-btn" title="Пауза">⏸</button>
+                                            <button class="ctrl-btn next-btn" title="Следующая">▶</button>
+                                        </div>
+                                    </div>
+                                    <div class="complaint-text">${escapeHtml(text)}<div class="floating-timer"></div></div>
+                                `;
+                                allComplaints.push({
+                                    html: complaintHtml,
+                                    timestamp: timestamp
+                                });
+                            }
+                        }
+                    }
+                }
+                const ednaUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(EDNA_SHEET)}&range=A:Z`;
+                const ednaResp = isElectron && nodeFetch ? await nodeFetch(ednaUrl) : await fetch(ednaUrl);
+                const ednaText = await ednaResp.text();
+                const ednaRows = parseCSV(ednaText);
+                if (ednaRows.length > 0) {
+                    const ednaHeaders = ednaRows[0];
+                    const threadIdIndex = findColumn(ednaHeaders, ['ID треда']);
+                    const directionIndex = findColumn(ednaHeaders, ['Направление сообщения']);
+                    const textIndex = findColumn(ednaHeaders, ['Текст']);
+                    const departmentIndex = findColumn(ednaHeaders, ['Отдел']);
+                    const dateIndex = findColumn(ednaHeaders, ['Дата доставки']);
+                    if (threadIdIndex !== -1 && directionIndex !== -1 && textIndex !== -1 && departmentIndex !== -1) {
+                        const threads = {};
+                        for (let i = 1; i < ednaRows.length; i++) {
+                            const row = ednaRows[i];
+                            const threadId = row[threadIdIndex]?.trim();
+                            if (!threadId) continue;
+                            if (!threads[threadId]) {
+                                threads[threadId] = [];
+                            }
+                            threads[threadId].push({
+                                direction: row[directionIndex]?.trim().toLowerCase(),
+                                text: row[textIndex]?.trim(),
+                                department: row[departmentIndex]?.trim(),
+                                date: row[dateIndex]?.trim()
+                            });
+                        }
+                        for (const [threadId, messages] of Object.entries(threads)) {
+                            const inMessages = [];
+                            let threadDateTime = '';
+                            let firstIncomingDate = '';
+                            messages.sort((a, b) => {
+                                const dateA = a.date ? new Date(a.date.replace(/(\d{2})\.(\d{2})\.(\d{2})/, '20$3-$2-$1')) : 0;
+                                const dateB = b.date ? new Date(b.date.replace(/(\d{2})\.(\d{2})\.(\d{2})/, '20$3-$2-$1')) : 0;
+                                return dateA - dateB;
+                            });
+                            for (const message of messages) {
+                                if (message.direction &&
+                                    (message.direction.includes('in') ||
+                                    message.direction.includes('входящ')) && message.text &&
+                                    (targetDep === 'клиентский сервис' ||
+                                     normalizeStr(message.department) === targetDep)) {
+                                    inMessages.push(message.text);
+                                    if (!threadDateTime && message.date) {
+                                        const dateParts = message.date.split(' ');
+                                        const date = dateParts[0];
+                                        const time = dateParts[1] ? dateParts[1].split(':').slice(0, 2).join(':') : '';
+                                        threadDateTime = time ? `${date}, ${time}` : date;
+                                        firstIncomingDate = message.date;
+                                    }
+                                }
+                            }
+                            if (inMessages.length > 0) {
+                                const complaintText = filterOutHotButtons(inMessages.join('\n\n'));
+                                if (!seen.has(complaintText)) {
+                                    seen.add(complaintText);
+                                    let timestamp = 0;
+                                    if (firstIncomingDate) {
+                                        const [datePart, timePart] = firstIncomingDate.split(' ');
+                                        timestamp = parseDateTime(datePart, timePart);
+                                    }
+                                    const complaintHtml = `
+                                        <div class="complaint-header">
+                                            <div class="complaint-title">
+                                                <span class="complaint-number" data-type="edna" data-id="${threadId}">
+                                                    EDNA Тред №${threadId}
+                                                </span>
+                                                <div id="complaint-date">${threadDateTime}</div>
+                                            </div>
+                                            <div class="control-buttons">
+                                                <button class="email-btn" title="Отправить почту"></button>
+                                                <button class="ctrl-btn prev-btn" title="Предыдущая">◀</button>
+                                                <button class="ctrl-btn pause-btn" title="Пауза">⏸</button>
+                                                <button class="ctrl-btn next-btn" title="Следующая">▶</button>
+                                            </div>
+                                        </div>
+                                        <div class="complaint-text">${escapeHtml(complaintText)}<div class="floating-timer"></div></div>
+                                    `;
+                                    allComplaints.push({
+                                        html: complaintHtml,
+                                        timestamp: timestamp
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+                allComplaints.sort((a, b) => a.timestamp - b.timestamp);
+                const sortedComplaints = allComplaints.map(item => item.html);
+                if (sortedComplaints.length === 0) {
+                    return [`
+                        <div class="complaint-header">
+                            <div class="complaint-title">
+                                <div>Нет жалоб для выбранного отдела</div>
+                            </div>
+                            <div class="control-buttons">
+                            </div>
+                        </div>
+                        <div class="complaint-text"><div class="floating-timer"></div></div>
+                    `];
+                }
+                return sortedComplaints;
+            } catch (e) {
+                console.error('Ошибка обработки жалоб:', e);
+                return [`Ошибка обработки жалоб: ${e.message}`];
+            }
+        }
+        async function updateComplaintsForDepartment(dep) {
+            try {
+                const newComplaints = await getComplaintsForDepartment(dep);
+                if (JSON.stringify(newComplaints) !== JSON.stringify(complaints)) {
+                    complaints = newComplaints;
+                    currentComplaintIndex = 0;
+                    showComplaint(complaints[currentComplaintIndex]);
+                    startTimer();
+                }
+            } catch (e) {
+                console.error('Ошибка обновления жалоб:', e);
+            }
+        }
+        function createClock(container) {
+            const clock = document.createElement('div');
+            clock.className = 'clock-face';
+            const hourHand = document.createElement('div');
+            hourHand.className = 'hour-hand';
+            const minuteHand = document.createElement('div');
+            minuteHand.className = 'minute-hand';
+            const center = document.createElement('div');
+            center.className = 'clock-center';
+            const digitalDisplay = document.createElement('div');
+            digitalDisplay.className = 'timer-digital';
+            digitalDisplay.textContent = '40';
+            const timerLabel = document.createElement('div');
+            timerLabel.className = 'timer-label';
+            timerLabel.textContent = 'сек';
+            clock.appendChild(hourHand);
+            clock.appendChild(minuteHand);
+            clock.appendChild(center);
+            clock.appendChild(digitalDisplay);
+            clock.appendChild(timerLabel);
+            container.appendChild(clock);
+        }
+        function startTimer() {
+            clearInterval(complaintInterval);
+            timeRemaining = 40000;
+            complaintInterval = setInterval(() => {
+                if (!currentComplaintElement) return;
+                const timerElements = currentComplaintElement.querySelectorAll('.timer-digital');
+                const hourHands = currentComplaintElement.querySelectorAll('.hour-hand');
+                const minuteHands = currentComplaintElement.querySelectorAll('.minute-hand');
+                const clockFaces = currentComplaintElement.querySelectorAll('.clock-face');
+                if (timerElements.length === 0) return;
+                if (timeRemaining <= 0) {
+                    clearInterval(complaintInterval);
+                    nextComplaint();
+                    return;
+                }
+                const seconds = Math.floor(timeRemaining / 1000);
+                timerElements.forEach(el => el.textContent = seconds);
+                const progress = 1 - (timeRemaining / 40000);
+                const hourRotation = 360 * progress;
+                const minuteRotation = 360 * 12 * progress;
+                hourHands.forEach(hand => {
+                    hand.style.transform = `translate(-50%, -100%) rotate(${hourRotation}deg)`;
+                });
+                minuteHands.forEach(hand => {
+                    hand.style.transform = `translate(-50%, -100%) rotate(${minuteRotation}deg)`;
+                });
+                if (seconds <= 10) {
+                    clockFaces.forEach(face => {
+                        face.style.borderColor = seconds <= 5 ? '#ff5555' : '#ffaa00';
+                        if (seconds <= 5) {
+                            face.classList.add('timer-pulse');
+                        } else {
+                            face.classList.remove('timer-pulse');
+                        }
+                    });
+                    timerElements.forEach(el => el.classList.add('timer-alert'));
+                } else {
+                    clockFaces.forEach(face => {
+                        face.style.borderColor = 'var(--gold)';
+                        face.classList.remove('timer-pulse');
+                    });
+                    timerElements.forEach(el => el.classList.remove('timer-alert'));
+                }
+                timeRemaining -= 1000;
+            }, 1000);
+        }
+        async function nextComplaint() {
+            if (complaints.length === 0) return;
+            if (currentComplaintIndex === complaints.length - 1) {
+                await updateComplaintsForDepartment(currentDepartment);
+            }
+            currentComplaintIndex = (currentComplaintIndex + 1) % complaints.length;
+            showComplaint(complaints[currentComplaintIndex]);
+            startTimer();
+        }
+        function showComplaint(complaint) {
+            const complaintContent = document.getElementById('complaint-content');
+            currentComplaintElement = null;
+            const newComplaintElement = document.createElement('div');
+            newComplaintElement.className = 'complaint-slide complaint-slide-enter';
+            newComplaintElement.innerHTML = complaint;
+            complaintContent.appendChild(newComplaintElement);
+            currentComplaintElement = newComplaintElement;
+            setTimeout(() => {
+                newComplaintElement.classList.remove('complaint-slide-enter');
+                newComplaintElement.classList.add('complaint-slide-enter-active');
+            }, 10);
+            const oldComplaintElement = complaintContent.querySelector('.complaint-slide:not(.complaint-slide-enter)');
+            if (oldComplaintElement) {
+                oldComplaintElement.classList.add('complaint-slide-exit');
+                setTimeout(() => {
+                    oldComplaintElement.classList.remove('complaint-slide-exit');
+                    oldComplaintElement.classList.add('complaint-slide-exit-active');
+                }, 10);
+                setTimeout(() => {
+                    if (oldComplaintElement) {
+                        complaintContent.removeChild(oldComplaintElement);
+                    }
+                }, 500);
+            }
+            setTimeout(() => {
+                const timerContainers = newComplaintElement.querySelectorAll('.floating-timer');
+                timerContainers.forEach(container => {
+                    container.innerHTML = '';
+                    createClock(container);
+                });
+                document.querySelectorAll('.complaint-number').forEach(element => {
+                    element.addEventListener('click', function() {
+                        const type = this.getAttribute('data-type');
+                        const id = this.getAttribute('data-id');
+                        let url;
+                        if (type === 'detail2') {
+                            url = `https://c.lvsl.ru/admin/tats/call_center/${id}/edit/`;
+                        } else if (type === 'edna') {
+                            url = `https://sunlight.edna.ru/supervisor/chat/thread/${id}`;
+                        }
+                        if (url) {
+                            if (isElectron && shell) {
+                                shell.openExternal(url);
+                            } else {
+                                window.open(url, '_blank');
+                            }
+                        }
+                    });
+                });
+                document.querySelectorAll('.email-btn').forEach(button => {
+                    button.onclick = function() {
+                        const complaintTitle = document.querySelector('.complaint-number').textContent;
+                        let complaintText = document.querySelector('.complaint-text').textContent;
+                        complaintText = complaintText.slice(0, -5).trim();
+                        const subject = encodeURIComponent(complaintTitle);
+                        const body = encodeURIComponent(complaintText);
+                        window.location.href = `mailto:?subject=${subject}&body=${body}`;
+                    };
+                });
+                const bindButtons = () => {
+                    document.querySelectorAll('.prev-btn').forEach(button => {
+                        button.onclick = () => {
+                            if (isPaused) {
+                                clearInterval(pauseInterval);
+                                isPaused = false;
+                                document.querySelector('.pause-btn').textContent = '⏸';
+                            }
+                            currentComplaintIndex = (currentComplaintIndex - 1 + complaints.length) % complaints.length;
+                            showComplaint(complaints[currentComplaintIndex]);
+                            startTimer();
+                        };
+                    });
+                    document.querySelectorAll('.pause-btn').forEach(button => {
+                        button.onclick = function() {
+                            if (isPaused) {
+                                clearInterval(pauseInterval);
+                                isPaused = false;
+                                button.textContent = '⏸';
+                                startTimer();
+                            } else {
+                                clearInterval(complaintInterval);
+                                isPaused = true;
+                                button.textContent = '▶';
+                                startPauseTimer();
+                            }
+                        };
+                    });
+                    document.querySelectorAll('.next-btn').forEach(button => {
+                        button.onclick = () => {
+                            if (isPaused) {
+                                clearInterval(pauseInterval);
+                                isPaused = false;
+                                document.querySelector('.pause-btn').textContent = '⏸';
+                            }
+                            nextComplaint();
+                        };
+                    });
+                };
+                bindButtons();
+            }, 50);
+        }
+        function startPauseTimer() {
+            let pauseTimeRemaining = 60;
+            clearInterval(pauseInterval);
+            pauseInterval = setInterval(() => {
+                if (!currentComplaintElement) return;
+                const timerElements = currentComplaintElement.querySelectorAll('.timer-digital');
+                const clockFaces = currentComplaintElement.querySelectorAll('.clock-face');
+                const hourHands = currentComplaintElement.querySelectorAll('.hour-hand');
+                const minuteHands = currentComplaintElement.querySelectorAll('.minute-hand');
+                if (pauseTimeRemaining <= 0) {
+                    clearInterval(pauseInterval);
+                    isPaused = false;
+                    nextComplaint();
+                    return;
+                }
+                if (timerElements.length > 0) {
+                    timerElements.forEach(el => el.textContent = pauseTimeRemaining);
+                    clockFaces.forEach(face => {
+                        face.style.borderColor = '#2196F3';
+                    });
+                    const progress = 1 - (pauseTimeRemaining / 60);
+                    const hourRotation = 360 * progress;
+                    const minuteRotation = 360 * 12 * progress;
+                    hourHands.forEach(hand => {
+                        hand.style.transform = `translate(-50%, -100%) rotate(${hourRotation}deg)`;
+                    });
+                    minuteHands.forEach(hand => {
+                        hand.style.transform = `translate(-50%, -100%) rotate(${minuteRotation}deg)`;
+                    });
+                }
+                pauseTimeRemaining--;
+            }, 1000);
+        }
+        function returnToAuth() {
+            document.getElementById('auth-container').style.display = 'block';
+            document.getElementById('complaint-display').style.display = 'none';
+            document.getElementById('department-logo').style.display = 'none';
+            document.getElementById('menu-button').style.display = 'none';
+            clearInterval(complaintInterval);
+            clearInterval(pauseInterval);
+            currentDepartment = '';
+            appState = 'auth';
+            currentComplaintElement = null;
+            updateTickerText();
+        }
+        function updateDepartmentLogo(department) {
+            const logoElement = document.getElementById('department-logo-image');
+            const textElement = document.getElementById('department-logo-text');
+            const nameElement = document.getElementById('current-department');
+            const logoContainer = document.getElementById('department-logo');
+            if (department) {
+                logoContainer.style.display = 'flex';
+                nameElement.textContent = department;
+                const logoUrl = departmentLogos[department];
+                if (logoUrl) {
+                    logoElement.src = logoUrl;
+                    logoElement.style.display = 'block';
+                    textElement.textContent = '';
+                } else {
+                    logoElement.style.display = 'none';
+                    textElement.textContent = department.substring(0, 2);
+                }
+            } else {
+                logoContainer.style.display = 'none';
+            }
+        }
+        document.getElementById('menu-button').onclick = function() {
+            returnToAuth();
+        };
+        document.getElementById('auth-btn').onclick = async function() {
+            let dep = document.getElementById('department-select').value.trim();
+            if (!dep) {
+                document.getElementById('auth-error').textContent = 'Пожалуйста, выберите отдел!';
+                return;
+            }
+            document.getElementById('auth-error').textContent = '';
+            currentDepartment = dep;
+            appState = 'department';
+            document.getElementById('loading-overlay').style.display = 'flex';
+            try {
+                const messages = await getComplaintsForDepartment(dep);
+                complaints = messages;
+                currentComplaintIndex = 0;
+                updateDepartmentLogo(dep);
+                setTimeout(() => {
+                    document.getElementById('auth-container').style.display = 'none';
+                    document.getElementById('complaint-display').style.display = 'flex';
+                    document.getElementById('menu-button').style.display = 'block';
+                    showComplaint(complaints[currentComplaintIndex]);
+                    if (!messages[0].includes('Нет жалоб') && !messages[0].includes('Ошибка')) {
+                        startTimer();
+                    }
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    updateTickerText();
+                }, 500);
+            } catch (e) {
+                showComplaint([`Ошибка: ${e.message}`]);
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
+        };
+        document.getElementById('employee-btn').onclick = async function() {
+            const input = document.getElementById('employee-input');
+            let name = input.value.trim();
+            if (!name) {
+                document.getElementById('employee-error').textContent = 'Пожалуйста, введите имя!';
+                return;
+            }
+            if (!employees.includes(name)) {
+                document.getElementById('employee-error').textContent = 'Имя не найдено. Выберите из списка!';
+                return;
+            }
+            let dep = departmentByEmployee[name] || "";
+            dep = dep.trim();
+            currentDepartment = dep;
+            appState = 'department';
+            document.getElementById('employee-error').textContent = '';
+            document.getElementById('loading-overlay').style.display = 'flex';
+            try {
+                const messages = await getComplaintsForDepartment(dep);
+                complaints = messages;
+                currentComplaintIndex = 0;
+                updateDepartmentLogo(dep);
+                setTimeout(() => {
+                    document.getElementById('auth-container').style.display = 'none';
+                    document.getElementById('complaint-display').style.display = 'flex';
+                    document.getElementById('menu-button').style.display = 'block';
+                    showComplaint(complaints[currentComplaintIndex]);
+                    if (!messages[0].includes('Нет жалоб') && !messages[0].includes('Ошибка')) {
+                        startTimer();
+                    }
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    updateTickerText();
+                }, 500);
+            } catch (e) {
+                showComplaint([`Ошибка: ${e.message}`]);
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
+        };
+        document.getElementById('toggle-department').onclick = function() {
+            document.getElementById('toggle-department').classList.add('active');
+            document.getElementById('toggle-employee').classList.remove('active');
+            document.getElementById('department-auth').style.display = 'flex';
+            document.getElementById('employee-auth').style.display = 'none';
+        };
+        document.getElementById('toggle-employee').onclick = function() {
+            document.getElementById('toggle-employee').classList.add('active');
+            document.getElementById('toggle-department').classList.remove('active');
+            document.getElementById('employee-auth').style.display = 'flex';
+            document.getElementById('department-auth').style.display = 'none';
+        };
+        const employeeInput = document.getElementById('employee-input');
+        const autocompleteList = document.getElementById('autocomplete-list');
+        employeeInput.addEventListener('input', function() {
+            const value = this.value.trim().toLowerCase();
+            autocompleteList.innerHTML = '';
+            if (!value) {
+                autocompleteList.style.display = 'none';
+                return;
+            }
+            const matches = employees.filter(name =>
+                name.toLowerCase().includes(value)
+            );
+            if (matches.length === 0) {
+                autocompleteList.style.display = 'none';
+                return;
+            }
+            matches.forEach((name) => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-item';
+                div.textContent = name;
+                div.onclick = function() {
+                    employeeInput.value = name;
+                    autocompleteList.style.display = 'none';
+                };
+                autocompleteList.appendChild(div);
+            });
+            autocompleteList.style.display = 'block';
+        });
+        document.addEventListener('click', function(event) {
+            if (!autocompleteList.contains(event.target) && event.target !== employeeInput) {
+                autocompleteList.style.display = 'none';
+            }
+        });
+        async function checkForUpdates() {
+            console.log("Проверка обновлений...");
+            const oldDepartments = Array.from(document.getElementById('department-select').options).map(option => option.value);
+            await loadDepartments();
+            const newDepartments = Array.from(document.getElementById('department-select').options).map(option => option.value);
+            if (JSON.stringify(oldDepartments) !== JSON.stringify(newDepartments)) {
+                console.log("Обнаружены изменения в отделах, обновляю...");
+            }
+            const oldEmployees = [...employees];
+            await loadEmployeesAndMap();
+            if (JSON.stringify(oldEmployees) !== JSON.stringify(employees)) {
+                console.log("Обнаружены изменения в сотрудниках, обновляю...");
+            }
+            const table = await fetchSheetData(DEPARTMENT_SHEET, 'D:F');
+            if (table && table.rows) {
+                const newDepartmentLogos = {};
+                for (const row of table.rows) {
+                    const departmentCell = row.c[0]?.v?.toString().trim();
+                    const logoUrl = row.c[2]?.v?.toString().trim();
+                    if (departmentCell && logoUrl) {
+                        newDepartmentLogos[departmentCell] = logoUrl;
+                    }
+                }
+                if (JSON.stringify(newDepartmentLogos) !== JSON.stringify(departmentLogos)) {
+                    departmentLogos = newDepartmentLogos;
+                    if (currentDepartment) {
+                        updateDepartmentLogo(currentDepartment);
+                    }
+                }
+            }
+        }
+        let isDragging = false;
+    let startX, startY;
+    let winStartX, winStartY;
+    let currentWindow = null;
+
+    if (isElectron) {
+        try {
+            const { remote } = require('electron');
+            currentWindow = remote.getCurrentWindow();
+            
+            const tickerBar = document.getElementById('ticker-bar');
+            
+            tickerBar.addEventListener('mousedown', (e) => {
+                // Правая кнопка мыши (button 2)
+                if (e.button === 2) {
+                    e.preventDefault();
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    
+                    const winPos = currentWindow.getPosition();
+                    winStartX = winPos[0];
+                    winStartY = winPos[1];
+                    
+                    tickerBar.classList.add('dragging');
+                    document.body.style.userSelect = 'none';
+                }
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const newX = winStartX + (e.clientX - startX);
+                    const newY = winStartY + (e.clientY - startY);
+                    currentWindow.setPosition(newX, newY);
+                }
+            });
+
+            document.addEventListener('mouseup', (e) => {
+                if (isDragging && e.button === 2) {
+                    isDragging = false;
+                    tickerBar.classList.remove('dragging');
+                    document.body.style.userSelect = '';
+                }
+            });
+
+            // Отключаем контекстное меню на правый клик
+            tickerBar.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+            });
+        } catch (e) {
+            console.error('Ошибка инициализации перемещения окна:', e);
+        }
+    }
+        window.onload = async function() {
+            await loadDepartments();
+            await loadEmployeesAndMap();
+            const table = await fetchSheetData(DEPARTMENT_SHEET, 'D:F');
+            if (table && table.rows) {
+                for (const row of table.rows) {
+                    const departmentCell = row.c[0]?.v?.toString().trim();
+                    const logoUrl = row.c[2]?.v?.toString().trim();
+                    if (departmentCell && logoUrl) {
+                        departmentLogos[departmentCell] = logoUrl;
+                    }
+                }
+            }
+            await updateTickerText();
+            tickerInterval = setInterval(updateTickerText, 30000);
+            const tickerItems = document.querySelectorAll('.ticker-item');
+            tickerItems.forEach((item, index) => {
+                item.style.animationDelay = `${index * 1}s`;
+            });
+            setInterval(checkForUpdates, 30000);
+        };
+    </script>
+</body>
+</html>
